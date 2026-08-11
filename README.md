@@ -29,7 +29,7 @@ Complete unauthenticated remote compromise of any affected unit with mesh mode e
 | Finding | CVSS 3.1 | CVSS 4.0 |
 |---|---|---|
 | Command injection | 9.8 Critical | 9.3 Critical |
-| Arbitrary file write | 9.1 Critical | 8.7 High |
+| Arbitrary file write | 9.1 Critical | 8.8 High |
 
 > **Note on patching.** The vendor states these models are discontinued and unmaintained, and that `sync_server` is not in their current product lineup. Devices on `M35M1_V210223` **cannot be upgraded directly** to the fixed firmware — it requires a two-step U-Boot Recovery procedure carrying brick risk. In practice, most units in the field will never be patched.
 
@@ -41,9 +41,17 @@ Complete unauthenticated remote compromise of any affected unit with mesh mode e
 
 Don't assume a device is safe because it sits behind the router. These are range extenders and mesh nodes, usually reachable from anything on the LAN — including guest networks and compromised IoT.
 
-## Technical detail and PoC
+## Proof of concept
 
-Full protocol specification, the vulnerable code path, and a working proof of concept will be published here once CVE IDs are assigned.
+[`sync_server_rce.py`](./sync_server_rce.py) implements the wire protocol with three primitives:
+
+```
+python3 sync_server_rce.py <target> shell               # spawn telnetd, root shell
+python3 sync_server_rce.py <target> cmd "<command>"     # arbitrary command
+python3 sync_server_rce.py <target> write <path> <data> # arbitrary file write
+```
+
+Tested against physical WN535M1 hardware running `M35M1_V210223`. Clean up after yourself — `killall telnetd` — if you're testing a device you intend to keep using.
 
 ## Disclosure timeline
 
@@ -52,7 +60,7 @@ Full protocol specification, the vulnerable code path, and a working proof of co
 | **2026-08-03** | Reported to the vendor with full technical detail and PoC. 90-day coordinated disclosure proposed. |
 | **2026-08-04** | Vendor acknowledged and opened an internal review. |
 | **2026-08-05** | Vendor confirmed `M35M1_V210223` is affected, independently reproduced the PoC on their own hardware, confirmed the issue had not been reported before, and endorsed this CVE request. |
-| **2026-08-11** | CVE IDs requested from the MITRE CNA-LR. |
+| **2026-08-11** | CVE IDs requested from the MITRE CNA-LR. Advisory and PoC published. |
 
 Credit where it's due: Wavlink acknowledged within one working day, reproduced the finding themselves rather than taking my word for it, and actively supported the CVE request. That's a better response than plenty of larger companies manage.
 
